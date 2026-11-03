@@ -25,7 +25,12 @@ export function useRealtime(userId?: string) {
         "nft.updated",
         (event: { id: string; version: number; resource: Nft }) => {
           const key = `nft:${event.id}`;
-          if (event.version <= (versions.get(key) || 0)) return;
+          const current = queryClient.getQueryData<Nft>(["nft", event.id]);
+          if (
+            event.version <=
+            Math.max(versions.get(key) || 0, current?.version || 0)
+          )
+            return;
           versions.set(key, event.version);
           queryClient.setQueryData(["nft", event.id], event.resource);
           void queryClient.invalidateQueries({ queryKey: ["nfts"] });
@@ -42,7 +47,12 @@ export function useRealtime(userId?: string) {
         }) => {
           if (!userId || event.userId !== userId) return;
           const key = `order:${event.id}`;
-          if (event.version <= (versions.get(key) || 0)) return;
+          const current = queryClient.getQueryData<Order>(["order", event.id]);
+          if (
+            event.version <=
+            Math.max(versions.get(key) || 0, current?.version || 0)
+          )
+            return;
           versions.set(key, event.version);
           queryClient.setQueryData(["order", event.id], event.resource);
           void queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -56,3 +66,4 @@ export function useRealtime(userId?: string) {
     };
   }, [queryClient, userId]);
 }
+

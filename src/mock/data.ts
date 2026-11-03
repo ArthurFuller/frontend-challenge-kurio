@@ -9,6 +9,10 @@ export type Database = {
   favorites: Record<string, string[]>;
   carts: Record<string, CartItem[]>;
   wallets: Record<string, Wallet[]>;
+  walletConnections?: Record<
+    string,
+    { walletId: string; network: string; type: string }
+  >;
   orders: Order[];
   attempts: Record<string, { body: string; orderId: string }>;
 };
@@ -40,6 +44,18 @@ const baseNfts: Nft[] = [
     description: "Um viajante entre universos digitais.",
   },
   {
+    id: "neon-vessel-552",
+    name: "Neon Vessel #552",
+    image: "/images/ivory.png",
+    priceEth: "1.99",
+    edition: "1/50",
+    available: 12,
+    category: "Colecionável",
+    creator: "Kurio",
+    version: 1,
+    description: "Colecionável digital da coleção Kurio Editions.",
+  },
+  {
     id: "ivory-baron-088",
     name: "Ivory Baron #088",
     image: "/images/ivory.png",
@@ -62,15 +78,16 @@ const baseNfts: Nft[] = [
     creator: "Kurio",
     version: 1,
     description: "O ritmo dourado de uma nova geração.",
+    network: "Polygon",
   },
   {
     id: "cosmic-bloom-118",
     name: "Cosmic Bloom #118",
     image: "/images/sage.png",
-    priceEth: "0.89",
+    priceEth: "1.29",
     edition: "1/25",
     available: 4,
-    category: "Arte",
+    category: "Arte 3D",
     creator: "Kurio",
     version: 1,
     description: "Cores e formas de outro mundo.",
@@ -82,19 +99,19 @@ const baseNfts: Nft[] = [
     priceEth: "1.39",
     edition: "1/10",
     available: 7,
-    category: "Colecionável",
+    category: "Fotografia",
     creator: "Kurio",
     version: 1,
     description: "Explorador da coleção Nomad.",
   },
   {
-    id: "golden-signal-216",
-    name: "Golden Signal #216",
+    id: "golden-signal-160",
+    name: "Golden Signal #160",
     image: "/images/golden.png",
-    priceEth: "0.89",
+    priceEth: "0.39",
     edition: "1/50",
     available: 18,
-    category: "Arte",
+    category: "Música",
     creator: "Kurio",
     version: 1,
     description: "Sintonize a próxima era.",
@@ -125,7 +142,45 @@ export async function database(): Promise<Database> {
   const saved = localStorage.getItem(KEY);
   if (saved) {
     const db = JSON.parse(saved) as Database;
+    db.walletConnections ||= {};
     let changed = false;
+    for (const nft of db.nfts) {
+      const reference = baseNfts.find((item) => item.id === nft.id);
+      if (
+        reference &&
+        (nft.category !== reference.category ||
+          nft.network !== reference.network)
+      ) {
+        nft.category = reference.category;
+        nft.network = reference.network;
+        changed = true;
+      }
+      if (nft.id === "cosmic-bloom-118" && nft.priceEth === "0.89" && nft.version === 1) {
+        nft.priceEth = "1.29";
+        changed = true;
+      }
+    }
+    const oldSignal = db.nfts.find((item) => item.id === "golden-signal-216");
+    if (oldSignal) {
+      oldSignal.id = "golden-signal-160";
+      oldSignal.name = "Golden Signal #160";
+      if (oldSignal.version === 1 && oldSignal.priceEth === "0.89")
+        oldSignal.priceEth = "0.39";
+      for (const rows of Object.values(db.carts))
+        for (const row of rows)
+          if (row.nftId === "golden-signal-216") row.nftId = oldSignal.id;
+      for (const favorites of Object.values(db.favorites)) {
+        const index = favorites.indexOf("golden-signal-216");
+        if (index >= 0) favorites[index] = oldSignal.id;
+      }
+      changed = true;
+    }
+    for (const reference of baseNfts) {
+      if (!db.nfts.some((item) => item.id === reference.id)) {
+        db.nfts.push(reference);
+        changed = true;
+      }
+    }
     for (const order of db.orders) {
       if (
         order.status !== "pending" ||
@@ -196,6 +251,7 @@ export async function database(): Promise<Database> {
         },
       ],
     },
+    walletConnections: {},
     orders: [],
     attempts: {},
   };
@@ -208,6 +264,9 @@ export function save(db: Database) {
 export function reset() {
   localStorage.removeItem(KEY);
   localStorage.removeItem("kurio-token");
+  localStorage.removeItem("kurio-scenario");
+  sessionStorage.removeItem("kurio-coupon");
+  sessionStorage.removeItem("kurio-attempt-key");
 }
 export function publicUser(account: Account): User {
   const { passwordHash: _passwordHash, ...user } = account;
@@ -217,7 +276,12 @@ export function publicUser(account: Account): User {
 export function cartOwner(db: Database, token: string | null) {
   return (token && db.sessions[token]) || "guest";
 }
-export function quoteFor(db: Database, owner: string, coupon?: string): Quote {
+export function quoteFor(
+  db: Database,
+  owner: string,
+  coupon?: string,
+  network = "Ethereum",
+): Quote {
   const cart = db.carts[owner] || [];
   const items = cart.map((row) => {
     const nft = db.nfts.find((n) => n.id === row.nftId)!;
@@ -233,7 +297,9 @@ export function quoteFor(db: Database, owner: string, coupon?: string): Quote {
   );
   const code = coupon?.trim().toUpperCase() || null;
   const discount = code === "KURIO10" ? subtotal.times("0.1") : new Decimal(0);
-  const fee = items.length ? new Decimal("0.016") : new Decimal(0);
+  const fee = items.length
+    ? new Decimal(network === "Polygon" ? "0.004" : "0.016")
+    : new Decimal(0);
   const total = subtotal.minus(discount).plus(fee);
   return {
     items,
@@ -250,7 +316,9 @@ export function quoteFor(db: Database, owner: string, coupon?: string): Quote {
         i.nft.priceEth,
       ]),
       code,
+      network,
       total: total.toFixed(3),
     }),
   };
 }
+

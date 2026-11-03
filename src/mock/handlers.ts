@@ -25,11 +25,12 @@ function ownerOf(db: Database, request: Request) {
 function requireOwner(db: Database, request: Request) {
   return ownerOf(db, request);
 }
+let variableRequest = 0;
 async function network() {
   const scenario = localStorage.getItem("kurio-scenario") || "normal";
   if (scenario === "slow") await delay(1100);
   if (scenario === "variable")
-    await delay(150 + Math.floor(Math.random() * 850));
+    await delay([850, 150, 650, 250][variableRequest++ % 4]);
   return scenario;
 }
 function mergeGuest(db: Database, userId: string) {
@@ -45,6 +46,16 @@ function mergeGuest(db: Database, userId: string) {
 
 export const handlers = [
   socketHandler,
+  http.all("/api/*", async ({ request }) => {
+    if (request.url.includes("/api/__")) return undefined;
+    const scenario = localStorage.getItem("kurio-scenario");
+    if (scenario === "offline") return HttpResponse.error();
+    if (scenario === "timeout") {
+      await delay(11000);
+      return HttpResponse.error();
+    }
+    return undefined;
+  }),
   http.get("/api/session", async ({ request }) => {
     await network();
     const db = await database();
@@ -122,6 +133,8 @@ export const handlers = [
   http.post("/api/logout", async ({ request }) => {
     const db = await database();
     const token = tokenOf(request);
+    const owner = token ? db.sessions[token] : undefined;
+    if (owner) delete db.walletConnections?.[owner];
     if (token) delete db.sessions[token];
     save(db);
     return HttpResponse.json({ ok: true });
@@ -134,6 +147,7 @@ export const handlers = [
     const url = new URL(request.url);
     const search = (url.searchParams.get("search") || "").toLowerCase();
     const category = url.searchParams.get("category") || "";
+    const selectedNetwork = url.searchParams.get("network") || "";
     const sort = url.searchParams.get("sort") || "featured";
     const min = Number(url.searchParams.get("min") || 0);
     const max = Number(url.searchParams.get("max") || 999);
@@ -142,6 +156,7 @@ export const handlers = [
       (n) =>
         n.name.toLowerCase().includes(search) &&
         (!category || n.category === category) &&
+        (!selectedNetwork || (n.network || "Ethereum") === selectedNetwork) &&
         Number(n.priceEth) >= min &&
         Number(n.priceEth) <= max,
     );
@@ -151,10 +166,13 @@ export const handlers = [
       items = items.sort((a, b) => Number(b.priceEth) - Number(a.priceEth));
     if (sort === "name")
       items = items.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "newest") items = items.reverse();
+    if (sort === "popular")
+      items = items.sort((a, b) => b.available - a.available);
     return HttpResponse.json({
-      items: items.slice((page - 1) * 4, page * 4),
+      items: items.slice((page - 1) * 6, page * 6),
       total: items.length,
-      pages: Math.max(1, Math.ceil(items.length / 4)),
+      pages: Math.max(1, Math.ceil(items.length / 6)),
     });
   }),
   http.get("/api/nfts/:id", async ({ params }) => {
@@ -224,7 +242,10 @@ export const handlers = [
   }),
   http.post("/api/quote", async ({ request }) => {
     await network();
-    const body = (await request.json()) as { coupon?: string };
+    const body = (await request.json()) as {
+      coupon?: string;
+      network?: string;
+    };
     const code = body.coupon?.trim().toUpperCase();
     if (code && !["KURIO10"].includes(code))
       return fail(
@@ -245,7 +266,7 @@ export const handlers = [
         409,
         "AVAILABILITY",
       );
-    return HttpResponse.json(quoteFor(db, owner, code));
+    return HttpResponse.json(quoteFor(db, owner, code, body.network));
   }),
   http.post("/api/orders", async ({ request }) => {
     await network();
@@ -258,6 +279,17 @@ export const handlers = [
       walletId: string;
       network: string;
       key: string;
+      collector: {
+        name: string;
+        username: string;
+        email: string;
+        profileName: string;
+        walletAddress: string;
+        walletType: string;
+        referral: string;
+        ens: string;
+        note: string;
+      };
     };
     const key = request.headers.get("Idempotency-Key") || body.key;
     if (!key) return fail("Chave de idempotência obrigatória.", 422);
@@ -274,7 +306,32 @@ export const handlers = [
       (w) => w.id === body.walletId,
     );
     if (!wallet) return fail("Selecione uma carteira cadastrada.", 422);
-    const quote = quoteFor(db, owner, body.coupon);
+    const connected = db.walletConnections?.[owner];
+    if (
+      !connected ||
+      connected.walletId !== wallet.id ||
+      connected.network !== body.network ||
+      connected.type !== body.collector?.walletType
+    )
+      return fail("Conecte a carteira selecionada antes de confirmar.", 409);
+    if (body.collector.walletAddress !== wallet.address)
+      return fail(
+        "O endereço da carteira não corresponde à carteira conectada.",
+        422,
+      );
+    if (
+      !body.collector?.name?.trim() ||
+      !body.collector?.username?.trim() ||
+      !/^\S+@\S+\.\S+$/.test(body.collector?.email || "") ||
+      !body.collector?.profileName?.trim() ||
+      !body.collector?.walletAddress?.trim() ||
+      !body.collector?.walletType?.trim()
+    )
+      return fail(
+        "Preencha os dados obrigatórios do colecionador e da carteira.",
+        422,
+      );
+    const quote = quoteFor(db, owner, body.coupon, body.network);
     if (!quote.items.length) return fail("Carrinho vazio.", 422);
     if (quote.fingerprint !== body.fingerprint)
       return fail(
@@ -290,6 +347,8 @@ export const handlers = [
       createdAt: new Date().toISOString(),
       transaction: `0x${crypto.randomUUID().replaceAll("-", "")}`,
       version: 1,
+      collector: structuredClone(body.collector),
+      wallet: structuredClone(wallet),
     };
     db.orders.push(order);
     db.attempts[key] = { body: signature, orderId: order.id };
@@ -356,6 +415,20 @@ export const handlers = [
     const body = (await request.json()) as Partial<User>;
     if (body.email && !/^\S+@\S+\.\S+$/.test(body.email))
       return fail("E-mail inválido.", 422);
+    if (body.name !== undefined && !body.name.trim())
+      return fail("Informe o nome de exibição.", 422);
+    if (body.username !== undefined && !body.username.trim())
+      return fail("Informe o nome de usuário.", 422);
+    if (
+      db.accounts.some(
+        (a) =>
+          a.id !== owner &&
+          ((body.email && a.email.toLowerCase() === body.email.toLowerCase()) ||
+            (body.username &&
+              a.username.toLowerCase() === body.username.toLowerCase())),
+      )
+    )
+      return fail("E-mail ou nome de usuário já cadastrado.", 409);
     const account = db.accounts.find((a) => a.id === owner)!;
     Object.assign(account, {
       name: body.name?.trim() || account.name,
@@ -388,6 +461,48 @@ export const handlers = [
       ? HttpResponse.json(db.wallets[owner] || [])
       : fail("Entre para ver as carteiras.", 401);
   }),
+  http.get("/api/wallet/connection", async ({ request }) => {
+    await network();
+    const db = await database();
+    const owner = requireOwner(db, request);
+    return owner
+      ? HttpResponse.json(db.walletConnections?.[owner] || null)
+      : fail("Entre para conectar a carteira.", 401);
+  }),
+  http.post("/api/wallet/connection", async ({ request }) => {
+    await network();
+    const db = await database();
+    const owner = requireOwner(db, request);
+    if (!owner) return fail("Entre para conectar a carteira.", 401);
+    if (localStorage.getItem("kurio-scenario") === "wallet-declined")
+      return fail("Conexão de carteira recusada.", 409);
+    const input = (await request.json()) as {
+      walletId: string;
+      network: string;
+      type: string;
+    };
+    const wallet = (db.wallets[owner] || []).find(
+      (w) => w.id === input.walletId,
+    );
+    if (
+      !wallet ||
+      wallet.network !== input.network ||
+      !["MetaMask", "WalletConnect", "Coinbase Wallet"].includes(input.type)
+    )
+      return fail("Carteira ou rede inválida.", 422);
+    db.walletConnections ||= {};
+    db.walletConnections[owner] = input;
+    save(db);
+    return HttpResponse.json(input);
+  }),
+  http.delete("/api/wallet/connection", async ({ request }) => {
+    const db = await database();
+    const owner = requireOwner(db, request);
+    if (!owner) return fail("Entre para desconectar a carteira.", 401);
+    delete db.walletConnections?.[owner];
+    save(db);
+    return HttpResponse.json({ ok: true });
+  }),
   http.post("/api/wallets", async ({ request }) => {
     const db = await database();
     const owner = requireOwner(db, request);
@@ -395,6 +510,10 @@ export const handlers = [
     const body = (await request.json()) as Partial<Wallet>;
     if (!body.label?.trim() || !/^0x[a-fA-F0-9]{40}$/.test(body.address || ""))
       return fail("Informe um nome e um endereço Ethereum válido.", 422);
+    if (!body.displayName?.trim() || !body.profileName?.trim() || !/^\S+@\S+\.\S+$/.test(body.email || ""))
+      return fail("Preencha nome de exibição, nome do perfil e e-mail válido.", 422);
+    if (body.kind && !["MetaMask", "WalletConnect", "Coinbase Wallet"].includes(body.kind))
+      return fail("Tipo de carteira inválido.", 422);
     const list = db.wallets[owner] || [];
     if (body.primary) list.forEach((w) => (w.primary = false));
     const index = list.findIndex((w) => w.id === body.id);
@@ -404,6 +523,13 @@ export const handlers = [
       address: body.address!,
       network: body.network || "Ethereum",
       primary: !!body.primary,
+      displayName: body.displayName?.trim() || "",
+      profileName: body.profileName?.trim() || "",
+      email: body.email?.trim() || "",
+      ens: body.ens?.trim() || "",
+      kind: body.kind || "MetaMask",
+      referral: body.referral?.trim() || "",
+      secondaryAddress: body.secondaryAddress?.trim() || "",
     };
     if (index >= 0) list[index] = wallet;
     else list.push(wallet);
@@ -412,6 +538,7 @@ export const handlers = [
     return HttpResponse.json(list);
   }),
   http.post("/api/__reset", () => {
+    variableRequest = 0;
     reset();
     return HttpResponse.json({ ok: true });
   }),
@@ -446,3 +573,4 @@ export const handlers = [
     return HttpResponse.json({ ok: true });
   }),
 ];
+

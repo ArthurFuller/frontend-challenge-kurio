@@ -10,10 +10,10 @@ Todas as chamadas da interface usam Axios com prefixo `/api`; o MSW intercepta e
 | NFTs | `GET /nfts` com `search`, `category`, `min`, `max`, `sort`, `page`; `GET /nfts/:id` |
 | Favoritos | `GET /favorites`, `PUT/DELETE /favorites/:id` |
 | Carrinho | `GET /cart`, `PUT /cart` com `{nftId, quantity}` |
-| Cotação | `POST /quote` com `{coupon}` |
+| Cotação | `POST /quote` com `{coupon, network}` |
 | Pedidos | `POST /orders` com cabeçalho `Idempotency-Key`; `GET /orders/:id`, `GET /orders/by-key/:key` |
 | Perfil | `PATCH /profile`, `PATCH /password` |
-| Carteiras | `GET /wallets`, `POST /wallets` |
+| Carteiras | `GET /wallets`, `POST /wallets`; `GET/POST/DELETE /wallet/connection` |
 
 O preço ETH viaja como string decimal. `decimal.js` calcula subtotal, desconto, taxa e total. A cotação inclui `fingerprint` dos itens, versões, quantidades e valores. `POST /orders` recalcula tudo: se o fingerprint mudou, retorna `409` e exige revisão. A mesma chave de idempotência retorna o mesmo pedido; conteúdo diferente com a mesma chave retorna conflito. O recibo conserva um snapshot da cotação.
 
@@ -31,20 +31,20 @@ O binding publicado suporta o namespace padrão e eventos de texto. A simulaçã
 
 ## Interface e assets
 
-O layout toma o Figma como referência: fundo `#140D0A`, tipografia monoespaçada, acentos cobre/dourado, cards e formulários escuros. Os quatro PNGs em `public/images` foram recortados de visualizações do Figma. Miniaturas de algumas edições são reutilizadas e têm resolução inferior ao asset original. O arquivo Figma não foi modificado. O diálogo Radix segue o padrão de shadcn/ui para foco e teclado; há foco visível, labels, estados de erro e respeito a movimento reduzido.
+O layout toma o Figma como referência: fundo `#140D0A`, tipografia monoespaçada, acentos cobre/dourado, cards e formulários escuros. Os quatro PNGs em `public/images` foram extraídos dos frames exportados do Figma em resolução maior. Alguns NFTs reutilizam a mesma arte, como ocorre no frame; as demais variações ainda dependem de exportar camadas individuais. O arquivo Figma não foi modificado. O diálogo Radix segue o padrão de shadcn/ui para foco e teclado; há foco visível, labels, estados de erro e respeito a movimento reduzido.
 
 ## Limites conhecidos
 
-- A conexão e a recusa de carteira são simplificadas; a recusa de pagamento é um cenário MSW.
+- A conexão, desconexão e recusa de carteira são simuladas por endpoints MSW; não há extensão de carteira real.
 - O mock persiste apenas neste navegador. Não representa múltiplos clientes conectados a um backend comum.
-- Avatar é uma URL informada pelo usuário, sem upload de arquivo.
+- Avatar usa arquivo local de até 1 MB, convertido em data URL e persistido no mock do navegador.
 - Alguns frames editoriais do Figma e links fora do escopo não foram implementados como páginas.
-- A fidelidade visual ainda depende de exportar os assets originais em maior resolução e revisar detalhes de espaçamento por frame.
+- A revisão visual atual ainda precisa de comparação manual por frame e de novos baselines Playwright; os baselines versionados refletem a versão anterior.
 - `reports/summary.json` registra as medições Lighthouse e qualquer resultado abaixo das metas deve ser avaliado junto dos relatórios individuais.
 
-## Lighthouse medido
+## Lighthouse da versão anterior
 
-Medianas de três execuções por página e perfil no build otimizado, em Chromium local com mocks ativos:
+Medianas de três execuções por página e perfil no build otimizado anterior, em Chromium local com mocks ativos. Não representam a revisão visual atual:
 
 | Página | Perfil | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -54,3 +54,4 @@ Medianas de três execuções por página e perfil no build otimizado, em Chromi
 | Detalhe | Desktop | 83 | 100 | 96 | 92 | 3,05 s | 0,01 | 54 ms |
 
 O detalhe desktop ficou abaixo da meta de performance 90. O LCP de cerca de 3 s é o maior fator: a imagem principal aparece após inicialização do MSW e consulta do detalhe. O código inicial também inclui Router, Query e mocks, o que aumenta o trabalho de carregamento. O skeleton com dimensões reservadas eliminou o deslocamento grande de layout observado na primeira auditoria. Os relatórios HTML e JSON em `reports/` preservam o ambiente e as evidências de cada rodada.
+

@@ -5,18 +5,23 @@ import {
   createRouter,
   Link,
   Outlet,
+  useLocation,
   useNavigate,
   useParams,
   useSearch,
 } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Decimal from "decimal.js";
 import {
   ArrowLeft,
+  Eye,
+  EyeOff,
   Heart,
   Menu,
   Search,
   ShoppingCart,
   SlidersHorizontal,
+  Trash2,
   UserRound,
   Wallet as WalletIcon,
 } from "lucide-react";
@@ -41,6 +46,11 @@ const SessionContext = createContext<Session>({
 const useSession = () => useContext(SessionContext);
 
 function Layout() {
+  const location = useLocation();
+  const marketActive = ["/market", "/nft", "/cart", "/checkout", "/order"].some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
   const queryClient = useQueryClient();
   const [token, setToken] = useState(() => localStorage.getItem("kurio-token"));
   const [menuOpen, setMenuOpen] = useState(false);
@@ -104,26 +114,29 @@ function Layout() {
           >
             <Link
               to="/"
-              activeProps={{ className: "active" }}
+              className={!marketActive ? "active" : ""}
               onClick={() => setMenuOpen(false)}
             >
               Início
             </Link>
             <Link
-              to="/"
-              search={{ category: "Colecionável" }}
+              to="/market"
+              className={marketActive ? "active" : ""}
               onClick={() => setMenuOpen(false)}
             >
               Mercado
             </Link>
-            <a href="#rodape" onClick={() => setMenuOpen(false)}>
-              Criadores
-            </a>
-            <a href="#rodape" onClick={() => setMenuOpen(false)}>
-              Aprenda
-            </a>
+            <span className="nav-label">Criadores</span>
+            <span className="nav-label">Aprenda</span>
           </nav>
           <div className="header-actions">
+            <Link
+              to="/market"
+              aria-label="Buscar no mercado"
+              className="icon-link header-search"
+            >
+              <Search size={20} />
+            </Link>
             <Link
               to="/cart"
               aria-label={`Carrinho, ${cart.data?.reduce((n, i) => n + i.quantity, 0) || 0} itens`}
@@ -158,28 +171,115 @@ function Layout() {
           <Outlet />
         </main>
         <footer id="rodape" className="footer">
-          <div>
+          <div className="footer-features">
+            <div>
+              <i>W</i>
+              <h3>Segurança da carteira</h3>
+              <p>
+                Proteja sua carteira e colecione arte digital verificada com
+                confiança.
+              </p>
+            </div>
+            <div>
+              <i>C</i>
+              <h3>Criadores em destaque</h3>
+              <p>
+                Conheça artistas, estúdios e comunidades que moldam a cultura
+                digital.
+              </p>
+            </div>
+            <div>
+              <i>D</i>
+              <h3>Alertas de lançamentos</h3>
+              <p>
+                Receba calendários de cunhagem, novidades de listas de acesso e
+                análises do mercado.
+              </p>
+            </div>
+            <div>
+              <h3>Antecipe-se ao próximo lançamento</h3>
+              <div className="footer-newsletter">
+                <input
+                  aria-label="E-mail para lançamentos"
+                  placeholder="digite seu e-mail..."
+                  disabled
+                />
+                <button type="button" disabled>
+                  Enviar
+                </button>
+              </div>
+              <p>
+                Receba lançamentos selecionados, histórias de criadores e
+                novidades do mercado.
+              </p>
+            </div>
+          </div>
+          <div className="footer-contact">
             <strong>KURIO</strong>
-            <p>Feito para colecionadores, criadores e cultura.</p>
+            <span>
+              Feito para colecionadores,
+              <br /> criadores e cultura
+            </span>
+            <span>contato@email.com</span>
+            <span>+55 11 4002 8922</span>
           </div>
-          <div>
-            <h3>Meu perfil</h3>
-            <Link to="/profile">Meus dados</Link>
-            <Link to="/wallets">Carteiras</Link>
+          <div className="footer-links">
+            <div>
+              <h3>Meu perfil</h3>
+              <Link to="/profile">Meu perfil</Link>
+              <Link to="/wallets">Carteiras</Link>
+              <span>Minha coleção</span>
+              <span>Atividade</span>
+            </div>
+            <div>
+              <h3>Central de ajuda</h3>
+              <span>Como comprar NFTs</span>
+              <span>Carteira e segurança</span>
+              <span>Política do mercado</span>
+            </div>
+            <div>
+              <h3>Coleções</h3>
+              <Link to="/market" search={{ category: "Arte" }}>
+                Arte digital
+              </Link>
+              <Link to="/market" search={{ category: "Colecionável" }}>
+                Colecionáveis
+              </Link>
+            </div>
+            <div>
+              <h3>Redes sociais</h3>
+              <span>f ◎ ♥ in ▶</span>
+              <h3>Carteiras compatíveis</h3>
+              <span>METAMASK · WALLETCONNECT · COINBASE</span>
+            </div>
           </div>
-          <div>
-            <h3>Coleções</h3>
-            <Link to="/">Arte digital</Link>
-            <Link to="/">Colecionáveis</Link>
-          </div>
-          <div>
-            <h3>Ajuda</h3>
-            <p>
-              Este é um marketplace de demonstração. Nenhuma compra real é
-              realizada.
-            </p>
-          </div>
+          <small className="footer-copyright">
+            © 2026 Kurio. Propriedade digital para todos.
+          </small>
         </footer>
+        {(location.pathname === "/" || location.pathname === "/market") && (
+          <nav className="mobile-bottom-nav" aria-label="Navegação mobile">
+            <Link to="/" aria-label="Início">
+              ⌂
+            </Link>
+            <Link to="/favorites" aria-label="Favoritos">
+              <Heart size={21} />
+            </Link>
+            <Link
+              to="/market"
+              aria-label="Mercado"
+              className="mobile-market-action"
+            >
+              <Search size={23} />
+            </Link>
+            <Link to="/cart" aria-label="Carrinho">
+              <ShoppingCart size={21} />
+            </Link>
+            <Link to={session.data ? "/profile" : "/login"} aria-label="Perfil">
+              <UserRound size={21} />
+            </Link>
+          </nav>
+        )}
       </div>
     </SessionContext.Provider>
   );
@@ -204,17 +304,25 @@ function NftCard({ nft }: { nft: Nft }) {
     </Link>
   );
 }
-function Home() {
+function Home({ market = false }: { market?: boolean }) {
+  const categoryOptions = [
+    { label: "Arte digital", value: "Arte" },
+    { label: "Fotografia", value: "Fotografia" },
+    { label: "Música", value: "Música" },
+    { label: "Arte 3D", value: "Arte 3D" },
+    { label: "Colecionáveis", value: "Colecionável" },
+  ];
+  const routeSearch = useSearch({ strict: false }) as HomeSearch;
   const search = {
-    search: "",
-    category: "",
-    sort: "featured",
-    page: 1,
-    min: "",
-    max: "",
-    ...useSearch({ from: "/" }),
+    search: routeSearch.search || "",
+    category: routeSearch.category || "",
+    sort: routeSearch.sort || "featured",
+    page: routeSearch.page || 1,
+    min: routeSearch.min || "",
+    max: routeSearch.max || "",
+    network: routeSearch.network || "",
   };
-  const navigate = useNavigate({ from: "/" });
+  const navigate = useNavigate();
   const [input, setInput] = useState(search.search);
   const [filtersOpen, setFiltersOpen] = useState(false);
   useEffect(() => setInput(search.search), [search.search]);
@@ -225,6 +333,7 @@ function Home() {
     page: search.page,
     min: search.min || undefined,
     max: search.max || undefined,
+    network: search.network || undefined,
   };
   const nfts = useQuery({
     queryKey: ["nfts", params],
@@ -233,39 +342,86 @@ function Home() {
   });
   const update = (next: Partial<typeof search>) =>
     navigate({
+      to: market ? "/market" : "/",
       search: (prev) => ({ ...prev, ...next, page: next.page ?? 1 }),
     });
   return (
     <>
-      <section className="hero">
-        <div>
-          <span className="eyebrow">BEM-VINDO À KURIO</span>
-          <h1>
-            SEJA DONO DO FUTURO
-            <br />
-            DA CULTURA DIGITAL
-          </h1>
-          <p>Descubra NFTs selecionados de criadores do mundo todo.</p>
-          <a href="#colecoes" className="hero-link">
-            EXPLORAR →
-          </a>
-        </div>
-        <img src="/images/emerald.png" alt="Emerald Ape, destaque da coleção" />
-      </section>
-      <section id="colecoes" className="catalog">
-        <div className="section-heading">
+      {!market && (
+        <section className="hero">
           <div>
-            <span className="eyebrow">DESCUBRA</span>
-            <h2>Coleções</h2>
+            <span className="eyebrow">BEM-VINDO À KURIO</span>
+            <h1>
+              SEJA DONO DO FUTURO
+              <br />
+              DA ARTE DIGITAL
+            </h1>
+            <p>
+              Descubra NFTs selecionados de criadores emergentes e consagrados.
+              Colecione arte digital rara, apoie artistas e tenha uma parte da
+              cultura da internet.
+            </p>
+            <Link to="/market" className="hero-link">
+              EXPLORAR
+            </Link>
           </div>
-          <p>Arte digital e colecionáveis para descobrir.</p>
+          <img
+            src="/images/emerald.png"
+            alt="Emerald Ape, destaque da coleção"
+          />
+          <div className="hero-dots" aria-hidden="true">
+            ● ● ●
+          </div>
+        </section>
+      )}
+      <section id="colecoes" className="catalog">
+        {market && <h1 className="market-title">Mercado de NFTs</h1>}
+        <div className="mobile-search-row">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              update({ search: input });
+            }}
+          >
+            <Search size={18} />
+            <Input
+              aria-label="Buscar NFTs no mobile"
+              placeholder="Explorar coleções"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+          </form>
+          <Button
+            aria-label="Abrir filtros"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal size={18} />
+          </Button>
         </div>
         <div className="catalog-layout">
           <aside className="filters">
-            <h3>
-              <SlidersHorizontal size={17} /> Filtros
-            </h3>
-            <label htmlFor="category">Categoria</label>
+            <h3>Coleções</h3>
+            <div className="category-links">
+              <button
+                className={!search.category ? "chosen" : ""}
+                onClick={() => update({ category: "" })}
+              >
+                Todas as coleções
+              </button>
+              {categoryOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className={search.category === option.value ? "chosen" : ""}
+                  onClick={() => update({ category: option.value })}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <h3>Faixa de preço</h3>
+            <label htmlFor="category" className="sr-only">
+              Categoria
+            </label>
             <select
               id="category"
               value={search.category}
@@ -274,6 +430,9 @@ function Home() {
               <option value="">Todas</option>
               <option value="Arte">Arte</option>
               <option value="Colecionável">Colecionável</option>
+              <option value="Fotografia">Fotografia</option>
+              <option value="Música">Música</option>
+              <option value="Arte 3D">Arte 3D</option>
             </select>
             <label htmlFor="min">Preço mínimo (ETH)</label>
             <Input
@@ -297,6 +456,7 @@ function Home() {
               variant="ghost"
               onClick={() =>
                 navigate({
+                  to: market ? "/market" : "/",
                   search: {
                     search: "",
                     category: "",
@@ -304,14 +464,60 @@ function Home() {
                     page: 1,
                     min: "",
                     max: "",
+                    network: "",
                   },
                 })
               }
             >
               Limpar filtros
             </Button>
+            <h3>Rede</h3>
+            <div className="category-links">
+              <button
+                className={!search.network ? "chosen" : ""}
+                onClick={() => update({ network: "" })}
+              >
+                Todas
+              </button>
+              <button
+                className={search.network === "Ethereum" ? "chosen" : ""}
+                onClick={() => update({ network: "Ethereum" })}
+              >
+                Ethereum
+              </button>
+              <button
+                className={search.network === "Polygon" ? "chosen" : ""}
+                onClick={() => update({ network: "Polygon" })}
+              >
+                Polygon
+              </button>
+            </div>
           </aside>
           <div>
+            <div
+              className="market-tabs"
+              role="group"
+              aria-label="Seleção do catálogo"
+            >
+              <button
+                className={search.sort === "featured" ? "selected" : ""}
+                onClick={() => update({ sort: "featured" })}
+              >
+                Todos os NFTs
+              </button>
+              <button
+                className={search.sort === "newest" ? "selected" : ""}
+                onClick={() => update({ sort: "newest" })}
+              >
+                Novos lançamentos
+              </button>
+              <button
+                className={search.sort === "popular" ? "selected" : ""}
+                onClick={() => update({ sort: "popular" })}
+              >
+                Em alta
+              </button>
+            </div>
             <div className="catalog-toolbar">
               <form
                 onSubmit={(e) => {
@@ -342,7 +548,9 @@ function Home() {
                 value={search.sort}
                 onChange={(e) => update({ sort: e.target.value })}
               >
-                <option value="featured">Destaques</option>
+                <option value="featured">Listados recentemente</option>
+                <option value="newest">Novos lançamentos</option>
+                <option value="popular">Em alta</option>
                 <option value="price-asc">Menor preço</option>
                 <option value="price-desc">Maior preço</option>
                 <option value="name">Nome</option>
@@ -391,6 +599,67 @@ function Home() {
           </div>
         </div>
       </section>
+      {!market && (
+        <>
+          <section className="home-extras">
+            <div className="promo-card">
+              <img src="/images/emerald.png" alt="Emerald Ape" />
+              <div>
+                <h2>Lançamentos gênesis de edição limitada</h2>
+                <p>Colecione edições escassas diretamente dos criadores.</p>
+                <Link to="/market">Explorar →</Link>
+              </div>
+            </div>
+            <div className="promo-card">
+              <img src="/images/ivory.png" alt="Ivory Baron" />
+              <div>
+                <h2>Arte digital selecionada e muito mais</h2>
+                <p>Explore novos artistas e coleções verificadas.</p>
+                <Link to="/market">Explorar →</Link>
+              </div>
+            </div>
+          </section>
+          <section className="home-blog">
+            <h2>Diário da Cunhagem</h2>
+            <p>
+              Histórias, guias e insights para colecionadores sobre o universo
+              da propriedade digital.
+            </p>
+            <div>
+              {[
+                {
+                  image: "ivory",
+                  title: "Como funciona a propriedade de NFTs",
+                  copy: "Aprenda a colecionar, negociar e verificar ativos digitais.",
+                },
+                {
+                  image: "emerald",
+                  title: "10 artistas digitais para acompanhar",
+                  copy: "Conheça criadores que moldam a cultura digital.",
+                },
+                {
+                  image: "sage",
+                  title: "Raridade, atributos e procedência",
+                  copy: "Entenda raridade, procedência, direitos autorais e utilidade.",
+                },
+                {
+                  image: "golden",
+                  title: "Como proteger sua carteira",
+                  copy: "Proteja sua carteira, seus ativos e sua identidade.",
+                },
+              ].map((article) => (
+                <article key={article.title}>
+                  <img src={`/images/${article.image}.png`} alt="" />
+                  <div>
+                    <h3>{article.title}</h3>
+                    <p>{article.copy}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
       <Modal open={filtersOpen} onOpenChange={setFiltersOpen} title="Filtros">
         <div className="mobile-filter-fields">
           <Field label="Categoria" id="mobile-category">
@@ -402,6 +671,20 @@ function Home() {
               <option value="">Todas</option>
               <option value="Arte">Arte</option>
               <option value="Colecionável">Colecionável</option>
+              <option value="Fotografia">Fotografia</option>
+              <option value="Música">Música</option>
+              <option value="Arte 3D">Arte 3D</option>
+            </select>
+          </Field>
+          <Field label="Rede" id="mobile-network">
+            <select
+              id="mobile-network"
+              value={search.network}
+              onChange={(e) => update({ network: e.target.value })}
+            >
+              <option value="">Todas</option>
+              <option>Ethereum</option>
+              <option>Polygon</option>
             </select>
           </Field>
           <Field label="Preço mínimo (ETH)" id="mobile-min">
@@ -440,6 +723,8 @@ function Detail() {
   const { user } = useSession();
   const [quantity, setQuantity] = useState(1);
   const [notice, setNotice] = useState("");
+  const [imageView, setImageView] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const nft = useQuery({ queryKey: ["nft", id], queryFn: () => api.nft(id) });
   const favorites = useQuery({
     queryKey: ["favorites", user?.id],
@@ -481,7 +766,9 @@ function Detail() {
   if (nft.isPending)
     return (
       <>
-        <div className="breadcrumb"><Skeleton className="breadcrumb-skeleton" /></div>
+        <div className="breadcrumb">
+          <Skeleton className="breadcrumb-skeleton" />
+        </div>
         <div className="detail-layout detail-loading">
           <Skeleton className="detail-skeleton" />
           <div>
@@ -497,28 +784,73 @@ function Detail() {
   const active = favorites.data?.includes(id) || false;
   return (
     <>
+      <div className="mobile-detail-top">
+        <Link to="/market" aria-label="Voltar ao mercado">
+          <ArrowLeft size={20} />
+        </Link>
+        <button
+          aria-label={
+            active ? "Remover dos favoritos" : "Adicionar aos favoritos"
+          }
+          onClick={() =>
+            user
+              ? favorite.mutate(!active)
+              : navigate({ to: "/login", search: { next: `/nft/${id}` } })
+          }
+        >
+          <Heart size={20} fill={active ? "currentColor" : "none"} />
+        </button>
+      </div>
       <div className="breadcrumb">
         <Link to="/">Início</Link> / Mercado / {item.name}
       </div>
       <section className="detail-layout">
         <div className="detail-gallery">
           <div className="thumbnails">
-            <img src={item.image} alt="Miniatura da edição" />
+            {[0, 1, 2, 3].map((view) => (
+              <button
+                key={view}
+                type="button"
+                className={imageView === view ? "selected" : ""}
+                aria-label={`Ver imagem ${view + 1}`}
+                onClick={() => setImageView(view)}
+              >
+                <img src={item.image} alt="" />
+              </button>
+            ))}
           </div>
-          <img
-            className="detail-image"
-            src={item.image}
-            alt={`${item.name}, NFT da coleção Kurio`}
-          />
+          <div className="detail-main-image">
+            <img
+              className={`detail-image image-view-${imageView}`}
+              src={item.image}
+              alt={`${item.name}, NFT da coleção Kurio`}
+            />
+            <button
+              type="button"
+              className="detail-zoom"
+              aria-label="Ampliar imagem"
+              onClick={() => setZoomOpen(true)}
+            >
+              <Search size={19} />
+            </button>
+          </div>
         </div>
         <div className="detail-info">
-          <span className="eyebrow">KURIO EDITIONS</span>
           <h1>{item.name}</h1>
+          {id === "emerald-ape-042" && (
+            <div className="rating">
+              ★★★★★ <span>19 avaliações de colecionadores</span>
+            </div>
+          )}
           <div className="price">{eth(item.priceEth)}</div>
+          <strong>Sobre este NFT:</strong>
           <p>{item.description}</p>
           <div className="meta">
-            <strong>Edição:</strong> {item.edition} · {item.available}{" "}
-            disponíveis
+            <strong>Edição:</strong>
+            <div className="edition-options">
+              <span className="current">{item.edition}</span>
+              <span>{item.available} disponíveis</span>
+            </div>
           </div>
           <div className="meta">
             <strong>ID do token:</strong> #{item.id.split("-").at(-1)}
@@ -526,6 +858,9 @@ function Detail() {
           <div className="meta">
             <strong>Coleção:</strong> Kurio Apes
           </div>
+          {id === "emerald-ape-042" && (
+            <div className="meta">Atributos: Óculos, Esmeralda, Raro</div>
+          )}
           <div className="purchase-actions">
             <div className="stepper">
               <button
@@ -546,10 +881,11 @@ function Detail() {
             </div>
             <Button
               disabled={!item.available || add.isPending}
+              aria-label="Comprar"
               onClick={() => add.mutate()}
             >
               <ShoppingCart size={17} />{" "}
-              {add.isPending ? "Adicionando..." : "Comprar"}
+              {add.isPending ? "Adicionando..." : "Comprar NFT"}
             </Button>
             <Button
               variant="outline"
@@ -565,6 +901,7 @@ function Detail() {
               <Heart size={17} fill={active ? "currentColor" : "none"} />
               <span className="desktop-only">Favoritar</span>
             </Button>
+            <span className="mobile-purchase-price">{eth(item.priceEth)}</span>
           </div>
           {notice && (
             <p role="status" className="error">
@@ -573,16 +910,29 @@ function Detail() {
           )}
         </div>
       </section>
+      <section className="detail-description">
+        <div className="detail-description-tabs">
+          <strong>Detalhes do NFT</strong>
+          {id === "emerald-ape-042" && (
+            <span>Avaliações de colecionadores (19)</span>
+          )}
+        </div>
+        <p>{item.description}</p>
+        <p>Rede: Ethereum · Contrato ERC-721 verificado.</p>
+      </section>
       <section className="more">
         <h2>Mais desta coleção</h2>
         <div className="related">
-          {["sage-nomad-009", "ivory-baron-088", "golden-beat-207"].map(
+          {["cosmic-bloom-118", "violet-nomad-314", "ivory-baron-088", "golden-beat-207", "golden-signal-160"].map(
             (other) => (
               <Related key={other} id={other} />
             ),
           )}
         </div>
       </section>
+      <Modal open={zoomOpen} onOpenChange={setZoomOpen} title={item.name}>
+        <img className="zoomed-nft" src={item.image} alt={item.name} />
+      </Modal>
     </>
   );
 }
@@ -600,7 +950,9 @@ function Cart() {
   const navigate = useNavigate();
   const { user } = useSession();
   const [coupon, setCoupon] = useState("");
-  const [applied, setApplied] = useState("");
+  const [applied, setApplied] = useState(
+    () => sessionStorage.getItem("kurio-coupon") || "",
+  );
   const [notice, setNotice] = useState("");
   const cart = useQuery({
     queryKey: ["cart", user?.id || "guest"],
@@ -643,6 +995,12 @@ function Cart() {
       ) : (
         <div className="cart-layout">
           <div className="cart-items">
+            <div className="cart-table-head">
+              <span>NFTs</span>
+              <span>Preço</span>
+              <span>Edições</span>
+              <span>Total</span>
+            </div>
             {cart.data.map((row) => (
               <CartRow
                 key={row.nftId}
@@ -660,7 +1018,9 @@ function Cart() {
               className="coupon"
               onSubmit={(e) => {
                 e.preventDefault();
-                setApplied(coupon.trim().toUpperCase());
+                const code = coupon.trim().toUpperCase();
+                setApplied(code);
+                sessionStorage.setItem("kurio-coupon", code);
               }}
             >
               <Input
@@ -677,6 +1037,7 @@ function Cart() {
                 onClick={() => {
                   setApplied("");
                   setCoupon("");
+                  sessionStorage.removeItem("kurio-coupon");
                 }}
               >
                 Remover cupom {applied}
@@ -709,6 +1070,7 @@ function Cart() {
                 </div>
                 <Button
                   className="w-full"
+                  aria-label="Finalizar compra"
                   onClick={() =>
                     navigate({
                       to: user ? "/checkout" : "/login",
@@ -716,8 +1078,11 @@ function Cart() {
                     })
                   }
                 >
-                  Finalizar compra
+                  Conectar e finalizar
                 </Button>
+                <Link to="/market" className="continue-link">
+                  Continuar explorando
+                </Link>
               </>
             )}
             {notice && (
@@ -727,6 +1092,22 @@ function Cart() {
             )}
           </aside>
         </div>
+      )}
+      {!!cart.data?.length && (
+        <section className="cart-recommendations">
+          <h2>Colecionadores também viram</h2>
+          <div className="related">
+            {[
+              "cosmic-bloom-118",
+              "violet-nomad-314",
+              "ivory-baron-088",
+              "golden-beat-207",
+              "golden-signal-160",
+            ].map((id) => (
+              <Related key={id} id={id} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );
@@ -754,6 +1135,7 @@ function CartRow({
         <span>Edição: {nft.data.edition}</span>
         <b>{eth(nft.data.priceEth)}</b>
       </div>
+      <strong className="cart-row-price">{eth(nft.data.priceEth)}</strong>
       <div className="cart-row-controls">
         <div className="stepper">
           <button
@@ -771,10 +1153,17 @@ function CartRow({
             +
           </button>
         </div>
-        <button className="text-button" onClick={() => onSet(0)}>
-          Remover
-        </button>
       </div>
+      <strong className="cart-row-total">
+        {eth(new Decimal(nft.data.priceEth).times(quantity).toFixed(3))}
+      </strong>
+      <button
+        className="cart-remove"
+        aria-label={`Remover ${nft.data.name}`}
+        onClick={() => onSet(0)}
+      >
+        <Trash2 size={19} />
+      </button>
     </div>
   );
 }
@@ -806,9 +1195,17 @@ function CheckoutForm() {
   const { user } = useSession();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [coupon] = useState("");
+  const [coupon] = useState(() => sessionStorage.getItem("kurio-coupon") || "");
   const [name, setName] = useState(user?.name || "");
+  const [username, setUsername] = useState(user?.username || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [profileName, setProfileName] = useState(user?.username || "");
+  const [walletType, setWalletType] = useState("Coinbase Wallet");
+  const [referral, setReferral] = useState("");
+  const [ens, setEns] = useState(user?.ens || "");
+  const [note, setNote] = useState("");
+  const [otherWallet, setOtherWallet] = useState(false);
+  const [otherAddress, setOtherAddress] = useState("");
   const [walletId, setWalletId] = useState("");
   const [network, setNetwork] = useState("Ethereum");
   const [review, setReview] = useState(false);
@@ -821,15 +1218,44 @@ function CheckoutForm() {
     queryKey: ["wallets", user?.id],
     queryFn: api.wallets,
   });
-  const quote = useQuery({
-    queryKey: ["quote", user?.id, coupon],
-    queryFn: () => api.quote(coupon),
+  const connection = useQuery({
+    queryKey: ["wallet-connection", user?.id],
+    queryFn: api.walletConnection,
   });
+  const connect = useMutation({
+    mutationFn: api.walletConnect,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["wallet-connection", user?.id],
+      });
+      setNotice("Carteira conectada.");
+    },
+    onError: (error) => setNotice(messageOf(error)),
+  });
+  const disconnect = useMutation({
+    mutationFn: api.walletDisconnect,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["wallet-connection", user?.id],
+      });
+      setNotice("Carteira desconectada.");
+    },
+    onError: (error) => setNotice(messageOf(error)),
+  });
+  const quote = useQuery({
+    queryKey: ["quote", user?.id, coupon, network],
+    queryFn: () => api.quote(coupon, network),
+  });
+  const selectedWallet = wallets.data?.find((wallet) => wallet.id === walletId);
+  const walletAddress = otherWallet
+    ? otherAddress
+    : selectedWallet?.address || "";
   useEffect(() => {
-    if (wallets.data?.length && !walletId)
-      setWalletId(
-        wallets.data.find((w) => w.primary)?.id || wallets.data[0].id,
-      );
+    if (wallets.data?.length && !walletId) {
+      const selected = wallets.data.find((w) => w.primary) || wallets.data[0];
+      setWalletId(selected.id);
+      setNetwork(selected.network);
+    }
   }, [wallets.data, walletId]);
   useEffect(() => {
     const key = sessionStorage.getItem("kurio-attempt-key");
@@ -860,6 +1286,17 @@ function CheckoutForm() {
         walletId,
         network,
         key: attemptKey,
+        collector: {
+          name,
+          username,
+          email,
+          profileName,
+          walletAddress,
+          walletType,
+          referral,
+          ens,
+          note,
+        },
       }),
     onSuccess: (result) => {
       sessionStorage.removeItem("kurio-attempt-key");
@@ -881,8 +1318,16 @@ function CheckoutForm() {
   });
   const canReview =
     !!name.trim() &&
+    !!username.trim() &&
+    !!profileName.trim() &&
     /^\S+@\S+\.\S+$/.test(email) &&
     !!walletId &&
+    !!walletAddress.trim() &&
+    !otherWallet &&
+    !!connection.data &&
+    connection.data.walletId === walletId &&
+    connection.data.network === network &&
+    connection.data.type === walletType &&
     !!quote.data?.items.length;
   return (
     <div className="page">
@@ -890,7 +1335,7 @@ function CheckoutForm() {
         <Link to="/">Início</Link> / <Link to="/cart">Carrinho</Link> /
         Pagamento
       </div>
-      <h1>Pagamento</h1>
+      <h1 className="checkout-page-title">Pagamento</h1>
       <div className="checkout-layout">
         <form
           className="checkout-form"
@@ -910,6 +1355,70 @@ function CheckoutForm() {
                 required
               />
             </Field>
+            <Field label="Nome de usuário*" id="checkout-username">
+              <Input
+                id="checkout-username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Field>
+            <Field label="Rede*" id="network">
+              <select
+                id="network"
+                value={network}
+                onChange={(e) => setNetwork(e.target.value)}
+              >
+                <option>Ethereum</option>
+                <option>Polygon</option>
+              </select>
+            </Field>
+            <Field label="Nome do perfil*" id="checkout-profile-name">
+              <Input
+                id="checkout-profile-name"
+                required
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+              />
+            </Field>
+            <Field label="Endereço da carteira*" id="checkout-address">
+              <Input
+                id="checkout-address"
+                required
+                value={walletAddress}
+                readOnly={!otherWallet}
+                onChange={(e) => setOtherAddress(e.target.value)}
+                placeholder="Endereço 0x da carteira"
+              />
+            </Field>
+            <Field
+              label="ENS ou carteira secundária (opcional)"
+              id="checkout-ens"
+            >
+              <Input
+                id="checkout-ens"
+                value={ens}
+                onChange={(e) => setEns(e.target.value)}
+              />
+            </Field>
+            <Field label="Tipo de carteira*" id="checkout-wallet-type">
+              <select
+                id="checkout-wallet-type"
+                value={walletType}
+                onChange={(e) => setWalletType(e.target.value)}
+              >
+                <option>Coinbase Wallet</option>
+                <option>MetaMask</option>
+                <option>WalletConnect</option>
+              </select>
+            </Field>
+            <Field label="Código de indicação" id="checkout-referral">
+              <Input
+                id="checkout-referral"
+                value={referral}
+                onChange={(e) => setReferral(e.target.value)}
+              />
+            </Field>
             <Field label="E-mail*" id="checkout-email">
               <Input
                 id="checkout-email"
@@ -919,7 +1428,37 @@ function CheckoutForm() {
                 required
               />
             </Field>
+            <Field label="Nome ENS" id="checkout-ens-name">
+              <Input
+                id="checkout-ens-name"
+                value={ens}
+                onChange={(e) => setEns(e.target.value)}
+              />
+            </Field>
           </div>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={otherWallet}
+              onChange={(e) => setOtherWallet(e.target.checked)}
+            />{" "}
+            Usar outra carteira?
+          </label>
+          {otherWallet && (
+            <Link to="/wallets" className="inline-link">
+              Cadastre a outra carteira para usá-la na compra
+            </Link>
+          )}
+          <Field
+            label="Observação do colecionador (opcional)"
+            id="checkout-note"
+          >
+            <textarea
+              id="checkout-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </Field>
           <h2>Carteira e rede</h2>
           {wallets.isPending ? (
             <Skeleton className="summary-skeleton" />
@@ -958,16 +1497,33 @@ function CheckoutForm() {
               </Link>
             </p>
           )}
-          <Field label="Rede" id="network">
-            <select
-              id="network"
-              value={network}
-              onChange={(e) => setNetwork(e.target.value)}
-            >
-              <option>Ethereum</option>
-              <option>Polygon</option>
-            </select>
-          </Field>
+          <div className="wallet-connection-actions">
+            {connection.data?.walletId === walletId &&
+            connection.data.network === network &&
+            connection.data.type === walletType ? (
+              <>
+                <span role="status">Carteira conectada</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => disconnect.mutate()}
+                >
+                  Desconectar
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!walletId || connect.isPending}
+                onClick={() =>
+                  connect.mutate({ walletId, network, type: walletType })
+                }
+              >
+                {connect.isPending ? "Conectando..." : "Conectar carteira"}
+              </Button>
+            )}
+          </div>
           <p className="subtle">
             Conexão de carteira simulada. Nenhuma transação real será enviada.
           </p>
@@ -1080,6 +1636,9 @@ function OrderContent() {
   const data = order.data;
   return (
     <div className="page receipt">
+      <Link to="/market" className="receipt-close" aria-label="Fechar recibo">
+        ×
+      </Link>
       <div className="receipt-icon">
         {data.status === "confirmed"
           ? "✓"
@@ -1102,10 +1661,29 @@ function OrderContent() {
             : "Seu colecionável digital está a caminho."}
       </p>
       <div className="summary">
-        <div className="summary-line">
-          <span>Pedido</span>
-          <strong>{data.id}</strong>
+        <div className="receipt-meta">
+          <div>
+            <span>ID da transação</span>
+            <strong>
+              {data.transaction.slice(0, 8)}...{data.transaction.slice(-4)}
+            </strong>
+          </div>
+          <div>
+            <span>Data</span>
+            <strong>
+              {new Date(data.createdAt).toLocaleDateString("pt-BR")}
+            </strong>
+          </div>
+          <div>
+            <span>Total</span>
+            <strong>{eth(data.quote.totalEth)}</strong>
+          </div>
+          <div>
+            <span>Carteira</span>
+            <strong>{data.wallet?.label || "Carteira"}</strong>
+          </div>
         </div>
+        <h2>Detalhes da transação</h2>
         {data.status === "confirmed" && (
           <div className="summary-line">
             <span>Transação simulada</span>
@@ -1147,15 +1725,19 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
   const session = useSession();
   const navigate = useNavigate();
   const params = useSearch({ from: mode === "login" ? "/login" : "/signup" });
-  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const mutation = useMutation({
-    mutationFn: () =>
-      mode === "login"
+    mutationFn: () => {
+      if (mode === "signup" && confirm !== password)
+        throw new Error("As senhas não coincidem.");
+      return mode === "login"
         ? api.login({ email, password })
-        : api.signup({ name, username, email, password }),
+        : api.signup({ name: username, username, email, password });
+    },
     onSuccess: (result) => {
       session.signIn(result.token);
       navigate({ to: params.next || "/" });
@@ -1163,22 +1745,59 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
   });
   return (
     <div className="auth-page">
-      <div className="auth-art">
-        <span className="eyebrow">KURIO</span>
-        <h1>
-          SEJA DONO DA
-          <br />
-          CULTURA DIGITAL
-        </h1>
-        <img src="/images/emerald.png" alt="Colecionável Emerald Ape" />
+      <div className="auth-background" aria-hidden="true">
+        <div className="auth-background-hero">
+          <div>
+            <small>Bem-vindo à Kurio</small>
+            <h2>
+              SEJA DONO DO FUTURO
+              <br />
+              DA ARTE DIGITAL
+            </h2>
+            <p>
+              Descubra NFTs selecionados de criadores de arte digital
+              verificada.
+            </p>
+            <span>EXPLORAR</span>
+          </div>
+          <img src="/images/emerald.png" alt="" />
+        </div>
+        <div className="auth-background-catalog">
+          <div className="auth-background-filters">
+            Coleções
+            <br />
+            <br />
+            Arte digital
+            <br />
+            <br />
+            Fotografia
+            <br />
+            <br />
+            Música
+            <br />
+            <br />
+            Arte 3D
+            <br />
+            <br />
+            Colecionáveis
+          </div>
+          <div className="auth-background-cards">
+            {["emerald", "sage", "ivory", "golden"].map((image) => (
+              <img key={image} src={`/images/${image}.png`} alt="" />
+            ))}
+          </div>
+        </div>
       </div>
       <div className="auth-panel">
-        <span className="eyebrow">BEM-VINDO À KURIO</span>
-        <h1>{mode === "login" ? "Entrar" : "Criar conta"}</h1>
+        <Link to="/" className="auth-close" aria-label="Fechar">
+          ×
+        </Link>
+        <div className="auth-logo">KURIO</div>
+        <h1>{mode === "login" ? "Entrar" : "Criar perfil de colecionador"}</h1>
         <p>
           {mode === "login"
-            ? "Acesse sua coleção e continue de onde parou."
-            : "Comece sua jornada no universo dos NFTs."}
+            ? "Entre para gerenciar sua carteira, coleção e perfil de criador."
+            : "Crie seu perfil de colecionador e conecte uma carteira quando quiser."}
         </p>
         <form
           onSubmit={(e) => {
@@ -1188,20 +1807,13 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
         >
           {mode === "signup" && (
             <>
-              <Field label="Nome completo" id="name">
-                <Input
-                  id="name"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Field>
               <Field label="Nome de usuário" id="username">
                 <Input
                   id="username"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Nome de usuário"
                 />
               </Field>
             </>
@@ -1213,18 +1825,44 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="contato@email.com"
             />
           </Field>
           <Field label="Senha" id="password">
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={mode === "signup" ? 8 : 1}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="password-input">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={mode === "signup" ? 8 : 1}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Senha"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </Field>
+          {mode === "signup" && (
+            <Field label="Confirmar senha" id="confirm">
+              <Input
+                id="confirm"
+                type={showPassword ? "text" : "password"}
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Confirmar senha"
+              />
+            </Field>
+          )}
+          {mode === "login" && (
+            <p className="forgot-password">Esqueceu a senha?</p>
+          )}
           {mutation.isError && (
             <p role="alert" className="error">
               {messageOf(mutation.error)}
@@ -1238,16 +1876,23 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
                 : "Criar conta"}
           </Button>
         </form>
-        <p>
+        <div className="auth-divider">Ou continue com</div>
+        <button className="auth-social" type="button" disabled>
+          Continuar com Google
+        </button>
+        <button className="auth-social" type="button" disabled>
+          Continuar com Facebook
+        </button>
+        <p className="auth-switch">
           {mode === "login" ? (
             <>
-              Ainda não tem conta?{" "}
+              Novo na Kurio?{" "}
               <Link
                 to="/signup"
                 search={{ next: params.next }}
                 className="inline-link"
               >
-                Cadastre-se
+                Crie uma conta
               </Link>
             </>
           ) : (
@@ -1263,7 +1908,9 @@ function Auth({ mode }: { mode: "login" | "signup" }) {
             </>
           )}
         </p>
-        <p className="subtle">Para testar: ana@kurio.test / Kurio123!</p>
+        <p className="subtle demo-hint">
+          Conta de demonstração: ana@kurio.test / Kurio123!
+        </p>
       </div>
     </div>
   );
@@ -1281,6 +1928,11 @@ function AccountNav() {
       <Link to="/wallets" activeProps={{ className: "active" }}>
         Carteiras
       </Link>
+      <span>Atividade</span>
+      <span>Lista de interesse</span>
+      <span>Ofertas</span>
+      <span>Arquivos baixados</span>
+      <span>Suporte</span>
       <button
         onClick={async () => {
           await signOut();
@@ -1309,6 +1961,7 @@ function ProfileContent() {
   const [avatar, setAvatar] = useState(user?.avatar || "");
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
+  const [confirmNext, setConfirmNext] = useState("");
   const [notice, setNotice] = useState("");
   const update = useMutation({
     mutationFn: () => api.profile({ name, username, email, ens, avatar }),
@@ -1319,10 +1972,15 @@ function ProfileContent() {
     onError: (error) => setNotice(messageOf(error)),
   });
   const password = useMutation({
-    mutationFn: () => api.password({ current, next }),
+    mutationFn: () => {
+      if (next !== confirmNext)
+        throw new Error("As novas senhas não coincidem.");
+      return api.password({ current, next });
+    },
     onSuccess: () => {
       setCurrent("");
       setNext("");
+      setConfirmNext("");
       setNotice("Senha alterada.");
     },
     onError: (error) => setNotice(messageOf(error)),
@@ -1372,22 +2030,44 @@ function ProfileContent() {
               />
             </Field>
           </div>
-          <Field label="URL do avatar" id="avatar">
-            <Input
-              id="avatar"
-              type="url"
-              value={avatar}
-              onChange={(e) => setAvatar(e.target.value)}
-              placeholder="https://..."
-            />
-          </Field>
-          {avatar && (
-            <img
-              className="avatar-preview"
-              src={avatar}
-              alt="Prévia do avatar"
-            />
-          )}
+          <div className="avatar-controls">
+            <span>Avatar</span>
+            {avatar ? (
+              <img
+                className="avatar-preview"
+                src={avatar}
+                alt="Prévia do avatar"
+              />
+            ) : (
+              <span className="avatar-placeholder">◉</span>
+            )}
+            <label className="btn btn-primary">
+              Alterar
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 1024 * 1024) {
+                    setNotice("O avatar deve ter até 1 MB.");
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => setAvatar(String(reader.result));
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => setAvatar("")}
+            >
+              Remover
+            </button>
+          </div>
           <Button disabled={update.isPending}>Salvar perfil</Button>
         </form>
         <h2>Alterar senha</h2>
@@ -1417,6 +2097,16 @@ function ProfileContent() {
               onChange={(e) => setNext(e.target.value)}
             />
           </Field>
+          <Field label="Confirmar nova senha" id="confirm-next">
+            <Input
+              id="confirm-next"
+              type="password"
+              required
+              minLength={8}
+              value={confirmNext}
+              onChange={(e) => setConfirmNext(e.target.value)}
+            />
+          </Field>
           <Button disabled={password.isPending}>Alterar senha</Button>
         </form>
         {notice && (
@@ -1435,6 +2125,41 @@ function Wallets() {
     </Private>
   );
 }
+function Favorites() {
+  return (
+    <Private>
+      <FavoritesContent />
+    </Private>
+  );
+}
+function FavoritesContent() {
+  const { user } = useSession();
+  const favorites = useQuery({
+    queryKey: ["favorites", user?.id],
+    queryFn: api.favorites,
+  });
+  return (
+    <div className="page">
+      <h1>Favoritos</h1>
+      {favorites.isPending ? (
+        <Skeleton className="summary-skeleton" />
+      ) : favorites.isError ? (
+        <Feedback
+          error={favorites.error}
+          retry={() => void favorites.refetch()}
+        />
+      ) : favorites.data?.length ? (
+        <div className="nft-grid">
+          {favorites.data.map((id) => (
+            <Related key={id} id={id} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty">Nenhum NFT favorito ainda.</div>
+      )}
+    </div>
+  );
+}
 function WalletContent() {
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -1443,6 +2168,13 @@ function WalletContent() {
     queryFn: api.wallets,
   });
   const [label, setLabel] = useState("");
+  const [displayName, setDisplayName] = useState(user?.name || "");
+  const [profileName, setProfileName] = useState(user?.username || "");
+  const [walletEmail, setWalletEmail] = useState(user?.email || "");
+  const [walletEns, setWalletEns] = useState(user?.ens || "");
+  const [walletKind, setWalletKind] = useState("MetaMask");
+  const [referral, setReferral] = useState("");
+  const [secondaryAddress, setSecondaryAddress] = useState("");
   const [address, setAddress] = useState("");
   const [network, setNetwork] = useState("Ethereum");
   const [primary, setPrimary] = useState(false);
@@ -1450,7 +2182,20 @@ function WalletContent() {
   const [notice, setNotice] = useState("");
   const saveWallet = useMutation({
     mutationFn: () =>
-      api.walletSave({ id: editing, label, address, network, primary }),
+      api.walletSave({
+        id: editing,
+        label,
+        address,
+        network,
+        primary,
+        displayName,
+        profileName,
+        email: walletEmail,
+        ens: walletEns,
+        kind: walletKind,
+        referral,
+        secondaryAddress,
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["wallets", user?.id] });
       setLabel("");
@@ -1464,8 +2209,11 @@ function WalletContent() {
     <div className="page account-layout">
       <AccountNav />
       <div className="account-content">
-        <h1>Minhas carteiras</h1>
-        <p className="subtle">Endereços simulados para esta demonstração.</p>
+        <h1>Carteira principal</h1>
+        <p className="subtle">
+          Estas carteiras ficam disponíveis no pagamento e para receber NFTs
+          comprados.
+        </p>
         {wallets.isPending ? (
           <Skeleton className="summary-skeleton" />
         ) : wallets.isError ? (
@@ -1494,6 +2242,13 @@ function WalletContent() {
                     setAddress(w.address);
                     setNetwork(w.network);
                     setPrimary(w.primary);
+                    setDisplayName(w.displayName || user?.name || "");
+                    setProfileName(w.profileName || user?.username || "");
+                    setWalletEmail(w.email || user?.email || "");
+                    setWalletEns(w.ens || user?.ens || "");
+                    setWalletKind(w.kind || "MetaMask");
+                    setReferral(w.referral || "");
+                    setSecondaryAddress(w.secondaryAddress || "");
                   }}
                 >
                   Editar
@@ -1510,12 +2265,28 @@ function WalletContent() {
           }}
           className="wallet-form"
         >
-          <Field label="Nome" id="wallet-label">
+          <Field label="Nome de exibição*" id="wallet-display-name">
+            <Input
+              id="wallet-display-name"
+              required
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
+          </Field>
+          <Field label="Apelido da carteira*" id="wallet-label">
             <Input
               id="wallet-label"
               required
               value={label}
               onChange={(e) => setLabel(e.target.value)}
+            />
+          </Field>
+          <Field label="Nome do perfil*" id="wallet-profile-name">
+            <Input
+              id="wallet-profile-name"
+              required
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
             />
           </Field>
           <Field label="Endereço (0x + 40 caracteres)" id="wallet-address">
@@ -1527,6 +2298,16 @@ function WalletContent() {
               placeholder="0x..."
             />
           </Field>
+          <Field
+            label="ENS ou carteira secundária (opcional)"
+            id="wallet-secondary"
+          >
+            <Input
+              id="wallet-secondary"
+              value={secondaryAddress}
+              onChange={(e) => setSecondaryAddress(e.target.value)}
+            />
+          </Field>
           <Field label="Rede" id="wallet-network">
             <select
               id="wallet-network"
@@ -1536,6 +2317,40 @@ function WalletContent() {
               <option>Ethereum</option>
               <option>Polygon</option>
             </select>
+          </Field>
+          <Field label="Tipo de carteira*" id="wallet-kind">
+            <select
+              id="wallet-kind"
+              value={walletKind}
+              onChange={(e) => setWalletKind(e.target.value)}
+            >
+              <option>MetaMask</option>
+              <option>WalletConnect</option>
+              <option>Coinbase Wallet</option>
+            </select>
+          </Field>
+          <Field label="Código de indicação" id="wallet-referral">
+            <Input
+              id="wallet-referral"
+              value={referral}
+              onChange={(e) => setReferral(e.target.value)}
+            />
+          </Field>
+          <Field label="E-mail*" id="wallet-email">
+            <Input
+              id="wallet-email"
+              type="email"
+              required
+              value={walletEmail}
+              onChange={(e) => setWalletEmail(e.target.value)}
+            />
+          </Field>
+          <Field label="Nome ENS" id="wallet-ens">
+            <Input
+              id="wallet-ens"
+              value={walletEns}
+              onChange={(e) => setWalletEns(e.target.value)}
+            />
           </Field>
           <label className="check">
             <input
@@ -1574,23 +2389,32 @@ type HomeSearch = {
   page?: number;
   min?: string;
   max?: string;
+  network?: string;
 };
 const rootRoute = createRootRoute({
   component: Layout,
   notFoundComponent: NotFound,
 });
+const validateCatalogSearch = (s: Record<string, unknown>): HomeSearch => ({
+  search: String(s.search || ""),
+  category: String(s.category || ""),
+  sort: String(s.sort || "featured"),
+  page: Math.max(1, Number(s.page) || 1),
+  min: String(s.min || ""),
+  max: String(s.max || ""),
+  network: String(s.network || ""),
+});
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  validateSearch: (s: Record<string, unknown>): HomeSearch => ({
-    search: String(s.search || ""),
-    category: String(s.category || ""),
-    sort: String(s.sort || "featured"),
-    page: Math.max(1, Number(s.page) || 1),
-    min: String(s.min || ""),
-    max: String(s.max || ""),
-  }),
+  validateSearch: validateCatalogSearch,
   component: Home,
+});
+const marketRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/market",
+  validateSearch: validateCatalogSearch,
+  component: () => <Home market />,
 });
 const detailRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1637,8 +2461,14 @@ const walletsRoute = createRoute({
   path: "/wallets",
   component: Wallets,
 });
+const favoritesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/favorites",
+  component: Favorites,
+});
 const routeTree = rootRoute.addChildren([
   homeRoute,
+  marketRoute,
   detailRoute,
   cartRoute,
   checkoutRoute,
@@ -1647,6 +2477,7 @@ const routeTree = rootRoute.addChildren([
   signupRoute,
   profileRoute,
   walletsRoute,
+  favoritesRoute,
 ]);
 export const router = createRouter({ routeTree, defaultPreload: "intent" });
 declare module "@tanstack/react-router" {
@@ -1654,3 +2485,4 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
+

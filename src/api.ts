@@ -55,14 +55,25 @@ export const api = {
   cart: () => http.get<CartItem[]>("/cart").then((r) => r.data),
   cartSet: (nftId: string, quantity: number) =>
     http.put<CartItem[]>("/cart", { nftId, quantity }).then((r) => r.data),
-  quote: (coupon?: string) =>
-    http.post<Quote>("/quote", { coupon }).then((r) => r.data),
+  quote: (coupon?: string, network?: string) =>
+    http.post<Quote>("/quote", { coupon, network }).then((r) => r.data),
   order: (input: {
     fingerprint: string;
     coupon?: string;
     walletId: string;
     network: string;
     key: string;
+    collector: {
+      name: string;
+      username: string;
+      email: string;
+      profileName: string;
+      walletAddress: string;
+      walletType: string;
+      referral: string;
+      ens: string;
+      note: string;
+    };
   }) =>
     http
       .post<Order>("/orders", input, {
@@ -78,6 +89,21 @@ export const api = {
   password: (input: { current: string; next: string }) =>
     http.patch("/password", input).then((r) => r.data),
   wallets: () => http.get<Wallet[]>("/wallets").then((r) => r.data),
+  walletConnection: () =>
+    http
+      .get<{ walletId: string; network: string; type: string } | null>(
+        "/wallet/connection",
+      )
+      .then((r) => r.data),
+  walletConnect: (input: { walletId: string; network: string; type: string }) =>
+    http
+      .post<{ walletId: string; network: string; type: string }>(
+        "/wallet/connection",
+        input,
+      )
+      .then((r) => r.data),
+  walletDisconnect: () => http.delete("/wallet/connection").then((r) => r.data),
   walletSave: (input: Partial<Wallet>) =>
     http.post<Wallet[]>("/wallets", input).then((r) => r.data),
 };
+

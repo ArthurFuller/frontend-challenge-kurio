@@ -5,7 +5,8 @@ export type Nft = {
   priceEth: string;
   edition: string;
   available: number;
-  category: "Arte" | "Colecionável";
+  category: string;
+  network?: string;
   creator: string;
   version: number;
   description: string;
@@ -24,6 +25,13 @@ export type Wallet = {
   address: string;
   network: string;
   primary: boolean;
+  displayName?: string;
+  profileName?: string;
+  email?: string;
+  ens?: string;
+  kind?: string;
+  referral?: string;
+  secondaryAddress?: string;
 };
 export type CartItem = { nftId: string; quantity: number };
 export type Quote = {
@@ -43,5 +51,18 @@ export type Order = {
   createdAt: string;
   transaction: string;
   version: number;
+  collector?: {
+    name: string;
+    username: string;
+    email: string;
+    profileName: string;
+    walletAddress: string;
+    walletType: string;
+    referral: string;
+    ens: string;
+    note: string;
+  };
+  wallet?: Wallet;
 };
 export type ApiError = { message: string; code?: string };
+

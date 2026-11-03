@@ -55,6 +55,7 @@ test("detalhe, carrinho, login e pedido confirmado", async ({
     .last()
     .click();
   await expect(page.getByRole("heading", { name: "Pagamento" })).toBeVisible();
+  await page.getByRole("button", { name: "Conectar carteira" }).click();
   await page.getByRole("button", { name: "Revisar compra" }).click();
   await page.getByRole("button", { name: "Confirmar compra" }).click();
   await expect(
@@ -131,10 +132,10 @@ test("carrinho visitante permanece depois do login e do refresh", async ({
 
 test("cadastro duplicado recebe conflito", async ({ page }) => {
   await page.goto("/signup");
-  await page.getByLabel("Nome completo").fill("Outra Ana");
   await page.getByLabel("Nome de usuário").fill("nova-ana");
   await page.getByLabel("E-mail").fill("ana@kurio.test");
   await page.getByLabel("Senha").fill("Kurio123!");
+  await page.getByLabel("Confirmar senha").fill("Kurio123!");
   await page.getByRole("button", { name: "Criar conta" }).last().click();
   await expect(page.getByRole("alert")).toContainText("já cadastrado");
 });
@@ -159,6 +160,7 @@ test("recusa preserva os itens do carrinho", async ({ page }) => {
       body: JSON.stringify({ name: "payment-declined" }),
     });
   });
+  await page.getByRole("button", { name: "Conectar carteira" }).click();
   await page.getByRole("button", { name: "Revisar compra" }).click();
   await page.getByRole("button", { name: "Confirmar compra" }).click();
   await expect(
@@ -188,6 +190,7 @@ test("timeout de pedido recupera a mesma tentativa", async ({ page }) => {
       body: JSON.stringify({ name: "order-timeout" }),
     });
   });
+  await page.getByRole("button", { name: "Conectar carteira" }).click();
   await page.getByRole("button", { name: "Revisar compra" }).click();
   await page.getByRole("button", { name: "Confirmar compra" }).click();
   await expect(
@@ -210,3 +213,4 @@ test("filtros mobile abrem em diálogo", async ({ page }) => {
   await page.getByRole("button", { name: "Ver resultados" }).click();
   await expect(page).toHaveURL(/category=Arte/);
 });
+

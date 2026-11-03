@@ -5,6 +5,8 @@ Implementação do desafio de marketplace de NFTs. O Figma foi usado **somente c
 - [Demonstração pública](https://kurio-nft-marketplace-arthur.lutoxd363951.chatgpt.site)
 - [Código no GitHub](https://github.com/ArthurFuller/frontend-challenge-kurio)
 
+**Revisão visual:** o build desta revisão foi gerado para publicação. A validação visual e funcional deve ser feita manualmente; os testes Playwright e as auditorias Lighthouse não foram executados nesta revisão.
+
 ## Como trabalhar neste projeto
 
 TypeScript é JavaScript com verificação de tipos. React monta as telas a partir dos componentes em `src/`. Vite inicia um servidor local: ao salvar um arquivo, o navegador atualiza a página. Você pode usar VS Code como editor, mas ele não é obrigatório. Node.js e um navegador são suficientes.
@@ -48,7 +50,9 @@ Abra o console do navegador na aplicação e execute, por exemplo:
 await fetch('/api/__scenario', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'payment-declined' }) })
 ```
 
-Valores: `normal`, `slow`, `variable`, `error`, `favorite-error`, `session-expired`, `payment-declined`, `order-timeout`. `normal` restaura o comportamento padrão. Para resetar integralmente os dados, execute `await fetch('/api/__reset', {method:'POST'})` e recarregue a página.
+Valores: `normal`, `slow`, `variable`, `offline`, `timeout`, `error`, `favorite-error`, `session-expired`, `wallet-declined`, `payment-declined`, `order-timeout`. `normal` restaura o comportamento padrão. Para resetar integralmente os dados, execute `await fetch('/api/__reset', {method:'POST'})` e recarregue a página.
+
+No pagamento, selecione uma carteira cadastrada, escolha o tipo de conexão e pressione **Conectar carteira** antes de revisar. `wallet-declined` simula a recusa dessa conexão. O cupom aplicado no carrinho segue para a cotação do pagamento.
 
 Para simular uma mudança de preço e receber `nft.updated` via Socket.IO:
 
@@ -61,3 +65,4 @@ await fetch('/api/__nft_update', { method: 'POST', headers: { 'Content-Type': 'a
 `src/api.ts` contém as chamadas Axios; `src/types.ts`, os contratos; `src/mock/handlers.ts`, os endpoints MSW; `src/mock/socket.ts` e `src/realtime.ts`, o transporte Socket.IO; `tests/`, os cenários E2E e as referências visuais. `ARCHITECTURE.md` descreve cache, sessão, idempotência e limitações.
 
 O build usa somente arquivos locais e mocks no navegador. `VITE_MOCKS=off` desativa os mocks e exige uma API externa compatível. Os arquivos `vercel.json` e `public/_redirects` permitem refresh das rotas em Vercel e Netlify/Cloudflare Pages.
+
