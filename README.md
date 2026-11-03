@@ -6,7 +6,7 @@ Este é o meu projeto para o desafio de front-end: um marketplace de NFTs com ca
 
 Desenvolvi o projeto com apoio de IA, mais especificamente do **GPT-6 Sol**. O prazo era curto e eu ainda não tinha experiência com as ferramentas e aplicações pedidas no desafio. Já tenho, porém, bastante prática com IA, criação de prompts e desenvolvimento de aplicativos e jogos com ajuda de IA. Usei essa experiência para orientar a implementação, estudar as decisões e chegar a uma entrega funcional dentro do tempo disponível.
 
-- [Demonstração pública](https://kurio-nft-marketplace-arthur.lutoxd363951.chatgpt.site)
+- [Demonstração pública](https://kurio-nft-marketplace-arthur.vercel.app)
 - [Código no GitHub](https://github.com/ArthurFuller/frontend-challenge-kurio)
 
 **Estado da entrega:** o projeto foi compilado e publicado. Ainda falta conferir manualmente todos os fluxos e comparar as telas com o Figma. Não rodei os testes Playwright nem as auditorias Lighthouse nesta revisão.
