@@ -1,0 +1,196 @@
+{
+  "generatedAt": "2026-11-03T19:04:38.891Z",
+  "node": "v24.19.0",
+  "rows": [
+    {
+      "page": "/",
+      "profile": "mobile",
+      "run": 1,
+      "performance": 93,
+      "accessibility": 98,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3208.75975,
+      "cls": 0.0005143075397579592,
+      "tbt": 87.00000000000045
+    },
+    {
+      "page": "/",
+      "profile": "mobile",
+      "run": 2,
+      "performance": 92,
+      "accessibility": 98,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3354.1659999999997,
+      "cls": 0.0005143075397579592,
+      "tbt": 82
+    },
+    {
+      "page": "/",
+      "profile": "mobile",
+      "run": 3,
+      "performance": 93,
+      "accessibility": 98,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3206.0719999999997,
+      "cls": 0.0005143075397579592,
+      "tbt": 88
+    },
+    {
+      "page": "/",
+      "profile": "desktop",
+      "run": 1,
+      "performance": 99,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 764.1014,
+      "cls": 0,
+      "tbt": 46.00000000000023
+    },
+    {
+      "page": "/",
+      "profile": "desktop",
+      "run": 2,
+      "performance": 99,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 764.6579999999999,
+      "cls": 0,
+      "tbt": 44.5
+    },
+    {
+      "page": "/",
+      "profile": "desktop",
+      "run": 3,
+      "performance": 99,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 763.2736,
+      "cls": 0,
+      "tbt": 44.99999999999977
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "mobile",
+      "run": 1,
+      "performance": 94,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3049.5019999999995,
+      "cls": 0,
+      "tbt": 61.916999999999916
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "mobile",
+      "run": 2,
+      "performance": 94,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3070.687,
+      "cls": 0,
+      "tbt": 70.61449999999991
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "mobile",
+      "run": 3,
+      "performance": 94,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3038.3365000000003,
+      "cls": 0,
+      "tbt": 52
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "desktop",
+      "run": 1,
+      "performance": 83,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3050.2932,
+      "cls": 0.008396076998050683,
+      "tbt": 56.38220000000001
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "desktop",
+      "run": 2,
+      "performance": 83,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3041.3095000000003,
+      "cls": 0.008396076998050683,
+      "tbt": 52.5
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "desktop",
+      "run": 3,
+      "performance": 82,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3115.7870000000003,
+      "cls": 0.008396076998050683,
+      "tbt": 54
+    }
+  ],
+  "summary": [
+    {
+      "page": "/",
+      "profile": "mobile",
+      "performance": 93,
+      "accessibility": 98,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3208.75975,
+      "cls": 0.0005143075397579592,
+      "tbt": 87.00000000000045
+    },
+    {
+      "page": "/",
+      "profile": "desktop",
+      "performance": 99,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 764.1014,
+      "cls": 0,
+      "tbt": 44.99999999999977
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "mobile",
+      "performance": 94,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3049.5019999999995,
+      "cls": 0,
+      "tbt": 61.916999999999916
+    },
+    {
+      "page": "/nft/emerald-ape-042",
+      "profile": "desktop",
+      "performance": 83,
+      "accessibility": 100,
+      "bestPractices": 96,
+      "seo": 92,
+      "lcp": 3050.2932,
+      "cls": 0.008396076998050683,
+      "tbt": 54
+    }
+  ]
+}

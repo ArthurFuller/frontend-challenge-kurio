@@ -1,0 +1,55 @@
+{
+  "name": "kurio-marketplace",
+  "version": "1.0.0",
+  "description": "Desafio Frontend — NFT Marketplace Kurio",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "audit": "node scripts/audit.mjs",
+    "test:e2e": "playwright test"
+  },
+  "keywords": [],
+  "type": "module",
+  "dependencies": {
+    "@mswjs/socket.io-binding": "^0.2.0",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-label": "^2.1.17",
+    "@tanstack/react-query": "^5.105.1",
+    "@tanstack/react-router": "^1.170.46",
+    "axios": "^1.21.0",
+    "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
+    "lucide-react": "^1.66.0",
+    "msw": "^2.15.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "socket.io-client": "^4.8.4",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "chrome-launcher": "^1.2.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "lighthouse": "^13.6.0",
+    "prettier": "^3.9.10",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
+}
