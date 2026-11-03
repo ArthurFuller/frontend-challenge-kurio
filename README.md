@@ -1,6 +1,9 @@
 # Kurio Marketplace
 
-Implementação local do desafio de marketplace de NFTs. O Figma foi usado **somente como referência visual**; nenhuma tela ou camada dele foi alterada.
+Implementação do desafio de marketplace de NFTs. O Figma foi usado **somente como referência visual**; nenhuma tela ou camada dele foi alterada.
+
+- [Demonstração pública](https://kurio-nft-marketplace-arthur.lutoxd363951.chatgpt.site)
+- [Código no GitHub](https://github.com/ArthurFuller/frontend-challenge-kurio)
 
 ## Como trabalhar neste projeto
 
