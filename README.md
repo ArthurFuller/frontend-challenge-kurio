@@ -1,15 +1,19 @@
 # Kurio Marketplace
 
-Implementação do desafio de marketplace de NFTs. O Figma foi usado **somente como referência visual**; nenhuma tela ou camada dele foi alterada.
+Este é o meu projeto para o desafio de front-end: um marketplace de NFTs com catálogo, conta, carrinho e compra simulada. Usei o Figma como referência visual, sem alterar o arquivo original.
+
+## Como fiz este desafio
+
+Desenvolvi o projeto com apoio de IA, mais especificamente do **GPT-6 Sol**. O prazo era curto e eu ainda não tinha experiência com as ferramentas e aplicações pedidas no desafio. Já tenho, porém, bastante prática com IA, criação de prompts e desenvolvimento de aplicativos e jogos com ajuda de IA. Usei essa experiência para orientar a implementação, estudar as decisões e chegar a uma entrega funcional dentro do tempo disponível.
 
 - [Demonstração pública](https://kurio-nft-marketplace-arthur.lutoxd363951.chatgpt.site)
 - [Código no GitHub](https://github.com/ArthurFuller/frontend-challenge-kurio)
 
-**Revisão visual:** o build desta revisão foi gerado para publicação. A validação visual e funcional deve ser feita manualmente; os testes Playwright e as auditorias Lighthouse não foram executados nesta revisão.
+**Estado da entrega:** o projeto foi compilado e publicado. Ainda falta conferir manualmente todos os fluxos e comparar as telas com o Figma. Não rodei os testes Playwright nem as auditorias Lighthouse nesta revisão.
 
-## Como trabalhar neste projeto
+## Rodando no seu computador
 
-TypeScript é JavaScript com verificação de tipos. React monta as telas a partir dos componentes em `src/`. Vite inicia um servidor local: ao salvar um arquivo, o navegador atualiza a página. Você pode usar VS Code como editor, mas ele não é obrigatório. Node.js e um navegador são suficientes.
+Você precisa de Node.js e um navegador. Pode usar o VS Code para editar, mas não é obrigatório.
 
 ```powershell
 npm ci
@@ -17,7 +21,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Abra **http://127.0.0.1:5173/**. Para parar o servidor, pressione `Ctrl+C` no terminal. O arquivo principal das telas é `src/router.tsx`; o visual está em `src/style.css`; a API simulada está em `src/mock/`.
+Abra **http://127.0.0.1:5173/**. O Vite atualiza a página quando você salva uma mudança. Para parar, pressione `Ctrl+C` no terminal. As telas estão em `src/router.tsx`, os estilos em `src/style.css` e a API simulada em `src/mock/`.
 
 ## Dados de demonstração
 
